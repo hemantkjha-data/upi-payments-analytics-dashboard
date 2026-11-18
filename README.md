@@ -14,6 +14,9 @@ Synthetic UPI-like transaction data (`data/transactions.csv`, 30,000 rows over 6
 - **Usage patterns:** hourly volume/success profile and merchant-category mix.
 - **Anomaly monitoring:** suspected high-value/irregular transactions flagged for review.
 
+## Live Dashboard
+- **View interactive dashboard:** https://hemantkjha-data.github.io/upi-payments-analytics-dashboard/dashboard/
+
 ## Analysis & Dashboard
 - `sql/analysis.sql` — KPIs, daily/hourly trends, merchant performance, failure reasons, anomaly summary.
 - `dashboard/index.html` — interactive dashboard (Chart.js): KPIs, daily volume & success rate, hourly pattern, category mix, failure reasons.
