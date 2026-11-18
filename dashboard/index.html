@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UPI Payments Analytics & Anomaly Monitoring</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{--bg:#0b1220;--card:#121b2f;--muted:#94a3b8;--text:#e5e7eb;--accent:#3b82f6;--accent2:#22c55e;--warn:#f59e0b;--danger:#ef4444;--border:#22314f}
+  *{box-sizing:border-box} body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#0b1220,#0e1628);color:var(--text)}
+  .wrap{max-width:1200px;margin:0 auto;padding:28px} h1{margin:0 0 6px;font-size:28px} .sub{color:var(--muted);margin:0 0 22px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:18px}
+  .kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px}
+  .kpi .label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em} .kpi .val{font-size:24px;font-weight:700;margin-top:6px}
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px} .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+  .card h3{margin:0 0 10px;font-size:15px;color:#dbe7ff} .span6{grid-column:span 6} .span12{grid-column:span 12} .span4{grid-column:span 4} .span8{grid-column:span 8}
+  canvas{width:100%!important;height:300px!important} table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:8px;border-bottom:1px solid var(--border);text-align:right} th:first-child,td:first-child{text-align:left} th{color:#cfe0ff;font-weight:600}
+  .note{color:var(--muted);font-size:12px;margin-top:8px}
+  @media(max-width:900px){.span6,.span4,.span8{grid-column:span 12} canvas{height:260px!important}}
+</style></head><body>
+<div class="wrap">
+  <h1>UPI Payments Analytics &amp; Anomaly Monitoring</h1>
+  <p class="sub">Transaction volume, success reliability, hourly/merchant patterns and anomaly flags — 30,000 synthetic transactions over 60 days.</p>
+  <div class="kpis">
+    <div class="kpi"><div class="label">Total Transactions</div><div class="val" id="kTot"></div></div>
+    <div class="kpi"><div class="label">Success Rate</div><div class="val" id="kSr"></div></div>
+    <div class="kpi"><div class="label">Total Volume</div><div class="val" id="kVol"></div></div>
+    <div class="kpi"><div class="label">Avg Ticket / Anomalies</div><div class="val" id="kAn"></div></div>
+  </div>
+  <div class="grid">
+    <div class="card span8"><h3>Daily Transaction Count & Success Rate</h3><canvas id="cDaily"></canvas></div>
+    <div class="card span4"><h3>Failure Reasons</h3><canvas id="cFail"></canvas></div>
+    <div class="card span6"><h3>Hourly Volume & Success Rate</h3><canvas id="cHour"></canvas></div>
+    <div class="card span6"><h3>Top Merchant Categories (txns)</h3><canvas id="cCat"></canvas></div>
+  </div>
+  <div class="note" style="margin-top:14px">Suspected anomalies are rule-flagged high-value/irregular transactions included in the dataset for monitoring review.</div>
+</div>
+<script>
+const D = {"total":30000,"success":28889,"successRate":96.3,"vol":99166448,"avgTicket":3306,"anomalies":75,"daily":[{"d":"12-31","cnt":125,"sr":96,"amt":347023},{"d":"01-01","cnt":507,"sr":96.06,"amt":1681637},{"d":"01-02","cnt":497,"sr":96.58,"amt":1719135},{"d":"01-03","cnt":498,"sr":97.19,"amt":1607487},{"d":"01-04","cnt":483,"sr":98.14,"amt":1527496},{"d":"01-05","cnt":502,"sr":95.62,"amt":1913368},{"d":"01-06","cnt":513,"sr":95.32,"amt":2058464},{"d":"01-07","cnt":493,"sr":97.16,"amt":1496940},{"d":"01-08","cnt":496,"sr":97.58,"amt":1483766},{"d":"01-09","cnt":515,"sr":95.73,"amt":1807051},{"d":"01-10","cnt":484,"sr":95.87,"amt":1774887},{"d":"01-11","cnt":498,"sr":95.18,"amt":1762066},{"d":"01-12","cnt":512,"sr":96.09,"amt":1767328},{"d":"01-13","cnt":484,"sr":97.11,"amt":1434114},{"d":"01-14","cnt":517,"sr":97.49,"amt":1681791},{"d":"01-15","cnt":476,"sr":95.17,"amt":1339311},{"d":"01-16","cnt":521,"sr":97.5,"amt":1640912},{"d":"01-17","cnt":491,"sr":96.13,"amt":1468935},{"d":"01-18","cnt":507,"sr":96.45,"amt":1584376},{"d":"01-19","cnt":486,"sr":95.47,"amt":1510855},{"d":"01-20","cnt":520,"sr":95.58,"amt":1623729},{"d":"01-21","cnt":488,"sr":97.13,"amt":1648119},{"d":"01-22","cnt":484,"sr":96.69,"amt":1655065},{"d":"01-23","cnt":533,"sr":94.75,"amt":1866560},{"d":"01-24","cnt":487,"sr":95.48,"amt":1452152},{"d":"01-25","cnt":507,"sr":95.66,"amt":1402817},{"d":"01-26","cnt":498,"sr":95.38,"amt":1538825},{"d":"01-27","cnt":491,"sr":95.11,"amt":1770960},{"d":"01-28","cnt":499,"sr":95.39,"amt":1576987},{"d":"01-29","cnt":508,"sr":97.64,"amt":1613758},{"d":"01-30","cnt":485,"sr":96.29,"amt":1602978},{"d":"01-31","cnt":515,"sr":96.12,"amt":1995436},{"d":"02-01","cnt":490,"sr":94.69,"amt":1423903},{"d":"02-02","cnt":512,"sr":97.27,"amt":1684865},{"d":"02-03","cnt":502,"sr":96.61,"amt":1605177},{"d":"02-04","cnt":496,"sr":96.17,"amt":1603309},{"d":"02-05","cnt":496,"sr":94.96,"amt":1847886},{"d":"02-06","cnt":502,"sr":96.41,"amt":1813509},{"d":"02-07","cnt":500,"sr":96.8,"amt":1538294},{"d":"02-08","cnt":515,"sr":96.5,"amt":1517391},{"d":"02-09","cnt":461,"sr":97.83,"amt":1544483},{"d":"02-10","cnt":503,"sr":96.62,"amt":1701680},{"d":"02-11","cnt":529,"sr":96.79,"amt":1544153},{"d":"02-12","cnt":489,"sr":96.52,"amt":1528462},{"d":"02-13","cnt":498,"sr":97.39,"amt":1384197},{"d":"02-14","cnt":511,"sr":96.67,"amt":1596525},{"d":"02-15","cnt":492,"sr":96.95,"amt":1982005},{"d":"02-16","cnt":498,"sr":96.79,"amt":1598532},{"d":"02-17","cnt":500,"sr":97,"amt":1577263},{"d":"02-18","cnt":522,"sr":95.4,"amt":1768396},{"d":"02-19","cnt":483,"sr":96.27,"amt":1428435},{"d":"02-20","cnt":512,"sr":96.48,"amt":1818828},{"d":"02-21","cnt":485,"sr":95.67,"amt":1756250},{"d":"02-22","cnt":507,"sr":95.86,"amt":1837605},{"d":"02-23","cnt":487,"sr":95.69,"amt":1949074},{"d":"02-24","cnt":509,"sr":95.68,"amt":1546826},{"d":"02-25","cnt":493,"sr":95.94,"amt":1762632},{"d":"02-26","cnt":510,"sr":95.69,"amt":1781909},{"d":"02-27","cnt":490,"sr":97.35,"amt":1522577},{"d":"02-28","cnt":498,"sr":95.58,"amt":1762820},{"d":"03-01","cnt":390,"sr":97.69,"amt":1385134}],"byHour":[{"h":0,"cnt":1246,"sr":95.02},{"h":1,"cnt":1293,"sr":94.12},{"h":2,"cnt":1271,"sr":95.44},{"h":3,"cnt":1272,"sr":93.71},{"h":4,"cnt":1302,"sr":94.32},{"h":5,"cnt":1251,"sr":95.28},{"h":6,"cnt":1284,"sr":96.42},{"h":7,"cnt":1240,"sr":96.69},{"h":8,"cnt":1252,"sr":96.65},{"h":9,"cnt":1170,"sr":97.35},{"h":10,"cnt":1255,"sr":96.81},{"h":11,"cnt":1260,"sr":97.54},{"h":12,"cnt":1281,"sr":96.41},{"h":13,"cnt":1253,"sr":96.25},{"h":14,"cnt":1272,"sr":96.93},{"h":15,"cnt":1200,"sr":96},{"h":16,"cnt":1172,"sr":96.67},{"h":17,"cnt":1223,"sr":96.73},{"h":18,"cnt":1261,"sr":97.54},{"h":19,"cnt":1210,"sr":96.78},{"h":20,"cnt":1266,"sr":96.6},{"h":21,"cnt":1241,"sr":97.34},{"h":22,"cnt":1254,"sr":97.13},{"h":23,"cnt":1271,"sr":97.64}],"byCat":[{"c":"Utilities","cnt":3053,"amt":8790299,"sr":96.33},{"c":"Travel","cnt":3028,"amt":8555808,"sr":96.17},{"c":"Fuel","cnt":3022,"amt":8876959,"sr":96.06},{"c":"E-commerce","cnt":3009,"amt":8422826,"sr":96.41},{"c":"Food & Dining","cnt":3006,"amt":8369478,"sr":96.61},{"c":"Healthcare","cnt":3003,"amt":8875441,"sr":96.57},{"c":"Entertainment","cnt":2982,"amt":8151000,"sr":96.78},{"c":"P2P Transfer","cnt":2979,"amt":22949344,"sr":96.31},{"c":"Grocery","cnt":2978,"amt":8175060,"sr":95.63},{"c":"Education","cnt":2940,"amt":8000233,"sr":96.09}],"failReasons":[{"r":"Limit Exceeded","c":206},{"r":"Bank Timeout","c":203},{"r":"Network Issue","c":182},{"r":"Insufficient Funds","c":181},{"r":"Technical Error","c":179},{"r":"Wrong PIN","c":160}]};
+document.getElementById('kTot').textContent = D.total.toLocaleString();
+document.getElementById('kSr').textContent = D.successRate + '%';
+document.getElementById('kVol').textContent = '₹' + (D.vol/1e7).toFixed(2) + ' Cr';
+document.getElementById('kAn').textContent = '₹' + D.avgTicket + ' / ' + D.anomalies;
+Chart.defaults.color = '#cbd5e1'; Chart.defaults.borderColor = '#22314f';
+new Chart(document.getElementById('cDaily'), {type:'bar', data:{labels:D.daily.map(x=>x.d), datasets:[
+  {label:'Transactions', data:D.daily.map(x=>x.cnt), backgroundColor:'#3b82f6', yAxisID:'y'},
+  {label:'Success %', data:D.daily.map(x=>x.sr), type:'line', borderColor:'#22c55e', tension:.3, yAxisID:'y1'}
+]}, options:{responsive:true,maintainAspectRatio:false,scales:{y:{position:'left'}, y1:{position:'right',min:90,max:100,grid:{drawOnChartArea:false}}}}});
+new Chart(document.getElementById('cFail'), {type:'doughnut', data:{labels:D.failReasons.map(x=>x.r), datasets:[{data:D.failReasons.map(x=>x.c), backgroundColor:['#ef4444','#f59e0b','#3b82f6','#a78bfa','#22c55e','#fb923c']} ]}, options:{responsive:true,maintainAspectRatio:false}});
+new Chart(document.getElementById('cHour'), {type:'line', data:{labels:D.byHour.map(x=>x.h+':00'), datasets:[
+  {label:'Transactions', data:D.byHour.map(x=>x.cnt), borderColor:'#3b82f6', backgroundColor:'#3b82f633', fill:true, tension:.3, yAxisID:'y'},
+  {label:'Success %', data:D.byHour.map(x=>x.sr), borderColor:'#22c55e', tension:.3, yAxisID:'y1'}
+]}, options:{responsive:true,maintainAspectRatio:false,scales:{y:{position:'left'}, y1:{position:'right',min:85,max:100,grid:{drawOnChartArea:false}}}}});
+new Chart(document.getElementById('cCat'), {type:'bar', data:{labels:D.byCat.map(x=>x.c), datasets:[{label:'Transactions', data:D.byCat.map(x=>x.cnt), backgroundColor:'#60a5fa'}]}, options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+</script></body></html>
